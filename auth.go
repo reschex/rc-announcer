@@ -9,15 +9,25 @@ import (
 	"net/http"
 )
 
-func getAuthToken(u string, p string, URL string) {
+//https://rocket.chat/docs/developer-guides/rest-api/authentication/login/
+type loginTokens struct {
+	AuthToken string `json:"authToken"`
+	UserID    string `json:"userId"`
+}
+type loginResponse struct {
+	Status string      `json:"status"`
+	Data   loginTokens `json:"data"`
+}
+
+func getAuthToken(u string, p string, URL string) (string, string) {
 
 	authValues := map[string]string{
-		"username": u,
+		"user":     u,
 		"password": p,
 	}
 
 	jsonAuthValues, _ := json.Marshal(authValues)
-	//fmt.Println(string(jsonAuthValues))
+	// fmt.Println("using map:", string(jsonAuthValues))
 
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonAuthValues))
 	req.Header.Set("Content-Type", "application/json")
@@ -28,22 +38,20 @@ func getAuthToken(u string, p string, URL string) {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
-
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
 
-	var response map[string]interface{}
+	// fmt.Println("response Status:", resp.Status)
+	// fmt.Println("response Headers:", resp.Header)
+	// fmt.Println("response Body:", string(body))
 
-	json.Unmarshal(body, &response)
-	fmt.Println("message:", response["message"])
+	var authResponse loginResponse
+	json.Unmarshal(body, &authResponse)
 
-	// {
-	// 	"status": "success",
-	// 	"data": {
-	// 	  "authToken": "gEQV-hPRIVATEgArGPFn_bTHISkISxAiFAKEmKEYi",
-	// 	  "userId": "8ALSO9FAKE3adXz6x"
-	// 	}
-	//   }
+	fmt.Println("API status:", authResponse.Status)
+	fmt.Println("authToken:", authResponse.Data.AuthToken)
+	fmt.Println("userId:", authResponse.Data.UserID)
+	if authResponse.Status != "success" {
+		log.Fatal("Unable to aquire new authentication tokens - exiting.")
+	}
+	return authResponse.Data.AuthToken, authResponse.Data.UserID
 }
