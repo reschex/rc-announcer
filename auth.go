@@ -29,7 +29,7 @@ func getAuthToken(u string, p string, URL string) (string, string) {
 	jsonAuthValues, _ := json.Marshal(authValues)
 	// fmt.Println("using map:", string(jsonAuthValues))
 
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonAuthValues))
+	req, err := http.NewRequest("POST", URL+"/api/v1/login", bytes.NewBuffer(jsonAuthValues))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
