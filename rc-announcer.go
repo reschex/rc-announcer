@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"os"
 )
@@ -14,21 +14,46 @@ type configuration struct {
 	rcUserPW    string
 }
 
+type loginTokens struct {
+	AuthToken string `json:"authToken"`
+	UserID    string `json:"userId"`
+}
+type loginResponse struct {
+	Status string      `json:"status"`
+	Data   loginTokens `json:"data"`
+}
+
+type loginCredentials struct {
+	Username string `json:"user"`
+	Password string `json:"password"`
+}
+
+type message struct {
+	Channel     string      `json:"channel"`
+	Text        string      `json:"text"`
+	Alias       string      `json:"alias"`
+	Emoji       string      `json:"emoji"`
+	Attachments attachments `json:"attachments"`
+}
+
+type attachments []attachment
+
+type attachment struct {
+	ImageURL string `json:"image_url"`
+	Title    string `json:"title"`
+}
+
+type messageResponse struct {
+	Success bool `json:"success"`
+}
+
 func main() {
 	config := configuration{}
 	config.loadConfig()
 
 	if config.rcAuthToken == "" {
-		config.rcAuthToken, config.rcUserID = getAuthToken(config.rcUser, config.rcUserPW, config.rcURL)
-		err := os.Setenv("RC_AUTH_TOKEN", config.rcAuthToken)
-		if err != nil {
-			log.Fatal("Unable to set AuthToken ENV", err)
-		}
-		err = os.Setenv("RC_USER_ID", config.rcAuthToken)
-		if err != nil {
-			log.Fatal("Unable to set UserID ENV", err)
-		}
-		fmt.Println("config after getAuthToken:", config)
+		log.Println("Unable to find AuthToken")
+		config.getAuthToken()
 	}
 
 	shame := attachment{
@@ -38,14 +63,23 @@ func main() {
 	Attachements := attachments{shame}
 
 	announcement := message{
-		Channel:     "", // general
-		Text:        ``, // this is a test
-		Alias:       "", // not_a robot
-		Emoji:       "", // :troll:
+		Channel:     "robot_test",                  // general
+		Text:        `refactor test, re-auth test`, // this is a test
+		Alias:       "rc-announcer",                // not_a robot
+		Emoji:       "",                            // :troll:
 		Attachments: Attachements,
 	}
 
-	announcement.send(config.rcAuthToken, config.rcUserID, config.rcURL)
+	log.Printf("Sending announcement to \"%+v\" as \"%+v\"\n", announcement.Channel, announcement.Alias)
+	resp, body := rcPost(config, "/api/v1/chat.postMessage", announcement)
+	var response messageResponse
+	json.Unmarshal(body, &response)
+
+	if response.Success != true {
+		log.Printf("Response headers: %+v\n", resp.Header)
+		log.Printf("Response body: %+v\n", string(body))
+		log.Fatal("RocketChat announce failed")
+	}
 }
 
 func (c *configuration) loadConfig() {
@@ -55,5 +89,37 @@ func (c *configuration) loadConfig() {
 	c.rcUser = os.Getenv("RC_USER_NAME")
 	c.rcUserPW = os.Getenv("RC_USER_PW")
 
-	fmt.Printf("config on load: %+v", c)
+	log.Printf("Config on load: %+v\n", c)
+}
+
+func (c *configuration) getAuthToken() {
+	// https://rocket.chat/docs/developer-guides/rest-api/authentication/login/
+	log.Println("Trying to Login")
+	credentials := loginCredentials{
+		Username: c.rcUser,
+		Password: c.rcUserPW,
+	}
+	resp, body := rcPost(*c, "/api/v1/login", credentials)
+
+	var response loginResponse
+	json.Unmarshal(body, &response)
+
+	log.Println("Login status:", response.Status)
+	log.Println("Login authToken:", response.Data.AuthToken)
+	log.Println("Login userId:", response.Data.UserID)
+	if response.Status != "success" {
+		log.Printf("Response headers: %+v\n", resp.Header)
+		log.Fatal("Unable to aquire new authentication tokens - exiting.")
+	}
+
+	c.rcAuthToken = response.Data.AuthToken
+	c.rcUserID = response.Data.UserID
+	err := os.Setenv("RC_AUTH_TOKEN", response.Data.AuthToken)
+	if err != nil {
+		log.Fatal("Unable to set AuthToken ENV", err)
+	}
+	err = os.Setenv("RC_USER_ID", response.Data.UserID)
+	if err != nil {
+		log.Fatal("Unable to set UserID ENV", err)
+	}
 }
