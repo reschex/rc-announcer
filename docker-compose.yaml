@@ -1,0 +1,18 @@
+version: '3'
+services:
+  rc-announcer:
+    build:
+      context: .
+      args:
+        - http_proxy
+        - https_proxy      
+    image: reschex/rc-announcer:v0.0.1
+    ports:
+      - "8080:8080"
+    environment:
+      RC_URL:
+      RC_AUTH_TOKEN:
+      RC_USER_ID:
+      RC_USER_NAME:
+      RC_USER_PW:
+    

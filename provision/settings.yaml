@@ -1,0 +1,38 @@
+# vagrant configuration
+---
+box: centos/7
+hostname: rc-announcer.dev.local
+name: rc-announcer-dev
+memory: 4096
+cpus: 2
+plugins:
+  - vagrant-vbguest
+  - vagrant-proxyconf
+ports:
+  - 8080
+modules:
+  - puppetlabs-docker
+  - puppetlabs-stdlib
+  - puppet-archive
+versions:
+  docker: 18.06.1.ce
+  compose: 1.23.2
+  helm: 2.11.0
+  go: 1.12.4
+packages:
+  - epel-release
+  - git
+  - gitflow
+  - make
+  - gcc
+  - gcc-c++
+  - autoconf
+  - automake
+  - vim
+  - curl
+  - wget
+  - unzip
+  - htop
+  - openssh-clients
+  - jq
+  - net-tools

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -33,6 +34,7 @@ type message struct {
 	Text        string      `json:"text"`
 	Alias       string      `json:"alias"`
 	Emoji       string      `json:"emoji"`
+	Avatar      string      `json:"avatar"`
 	Attachments attachments `json:"attachments"`
 }
 
@@ -48,14 +50,26 @@ type messageResponse struct {
 }
 
 func main() {
-	config := configuration{}
-	config.loadConfig()
+	rocketchat := configuration{}
+	rocketchat.loadConfig()
 
-	if config.rcAuthToken == "" {
+	if rocketchat.rcAuthToken == "" {
 		log.Println("Unable to find AuthToken")
-		config.getAuthToken()
+		rocketchat.getAuthToken()
 	}
 
+	// testMessage(config)
+
+	// router := mux.NewRouter().StrictSlash(true)
+	// router.HandleFunc("/", Index)
+	// router.HandleFunc("/announce/{channel}", config.AnnounceChannel)
+	// router.HandleFunc("/grafana/{channel}", config.AnnounceGrafana)
+	router := NewRouter(rocketchat)
+	log.Fatal(http.ListenAndServe(":8080", router))
+
+}
+
+func testMessage(config configuration, channel string) {
 	shame := attachment{
 		ImageURL: "http://static1.squarespace.com/static/573e24aae707eba722970e2c/573e26b47c65e44fad49d6bf/5900b692e4fcb56229197a17/1532044418725/untitled.png?format=1500w",
 		Title:    "Shame",
@@ -63,22 +77,23 @@ func main() {
 	Attachements := attachments{shame}
 
 	announcement := message{
-		Channel:     "robot_test",                  // general
-		Text:        `refactor test, re-auth test`, // this is a test
-		Alias:       "rc-announcer",                // not_a robot
-		Emoji:       "",                            // :troll:
+		Channel:     channel,        // general
+		Text:        `testing 123`,  // this is a test
+		Alias:       "rc-announcer", // not_a robot
+		Emoji:       "",             // :troll:
+		Avatar:      "",             // <baseURL>/avatar/<username>
 		Attachments: Attachements,
 	}
 
 	log.Printf("Sending announcement to \"%+v\" as \"%+v\"\n", announcement.Channel, announcement.Alias)
-	resp, body := rcPost(config, "/api/v1/chat.postMessage", announcement)
+	resp, body := rcPost(config, `/api/v1/chat.postMessage`, announcement)
 	var response messageResponse
 	json.Unmarshal(body, &response)
 
 	if response.Success != true {
 		log.Printf("Response headers: %+v\n", resp.Header)
 		log.Printf("Response body: %+v\n", string(body))
-		log.Fatal("RocketChat announce failed")
+		log.Println("RocketChat announce failed")
 	}
 }
 
