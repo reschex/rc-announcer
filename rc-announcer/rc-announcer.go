@@ -64,7 +64,7 @@ func main() {
 	// router.HandleFunc("/", Index)
 	// router.HandleFunc("/announce/{channel}", config.AnnounceChannel)
 	// router.HandleFunc("/grafana/{channel}", config.AnnounceGrafana)
-	router := NewRouter(rocketchat)
+	router := newRouter(rocketchat)
 	log.Fatal(http.ListenAndServe(":8080", router))
 
 }

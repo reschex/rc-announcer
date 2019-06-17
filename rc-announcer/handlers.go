@@ -26,7 +26,7 @@ type grafanaAlert struct {
 	Title       string      `json:"title"`
 }
 
-func Index(w http.ResponseWriter, r *http.Request) {
+func index(w http.ResponseWriter, r *http.Request) {
 	requestDump, err := httputil.DumpRequest(r, true)
 	if err != nil {
 		fmt.Println(err)
@@ -54,7 +54,7 @@ func (config configuration) AnnounceGrafana(w http.ResponseWriter, r *http.Reque
 
 	log.Printf("Sending announcement to \"%+v\" as \"%+v\"\n", announcement.Channel, announcement.Alias)
 	resp, body := rcPost(config, `/api/v1/chat.postMessage`, announcement)
-	CheckResponse(resp, body)
+	checkResponse(resp, body)
 }
 
 func (config configuration) AnnounceChannel(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +76,7 @@ func (config configuration) AnnounceChannel(w http.ResponseWriter, r *http.Reque
 	if message.Text != "" {
 		log.Printf("Received message: %+v\n", message)
 		resp, body := rcPost(config, `/api/v1/chat.postMessage`, message)
-		CheckResponse(resp, body)
+		checkResponse(resp, body)
 	} else {
 		log.Println("Received empty or unparsable message.")
 	}
@@ -119,7 +119,7 @@ func (alert grafanaAlert) ConvertToMessage(channel string) message {
 	return announcement
 }
 
-func CheckResponse(r *http.Response, b []byte) {
+func checkResponse(r *http.Response, b []byte) {
 	var respBody messageResponse
 	json.Unmarshal(b, &respBody)
 	if r.StatusCode != 200 || respBody.Success != true {

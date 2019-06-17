@@ -6,30 +6,30 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Route struct {
+type route struct {
 	Name        string
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
 }
 
-type Routes []Route
+type routes []route
 
-func NewRouter(rocketchat configuration) *mux.Router {
-	var routes = Routes{
-		Route{
+func newRouter(rocketchat configuration) *mux.Router {
+	var routes = routes{
+		route{
 			"RequestEcho",
 			"POST",
 			"/",
-			Index,
+			index,
 		},
-		Route{
+		route{
 			"Grafana",
 			"POST",
 			"/grafana/{channel}",
 			rocketchat.AnnounceGrafana,
 		},
-		Route{
+		route{
 			"test",
 			"POST",
 			"/announce/{channel}",

@@ -1,4 +1,5 @@
 # rc-announcer
+[![Go Report Card](https://goreportcard.com/badge/github.com/reschex/rc-announcer)](https://goreportcard.com/report/github.com/reschex/rc-announcer)
 
 ## Dev Environment
 
