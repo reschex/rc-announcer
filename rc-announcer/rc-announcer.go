@@ -124,7 +124,7 @@ func (c *configuration) getAuthToken() {
 	log.Println("Login userId:", response.Data.UserID)
 	if response.Status != "success" {
 		log.Printf("Response headers: %+v\n", resp.Header)
-		log.Fatal("Unable to aquire new authentication tokens - exiting.")
+		log.Fatal("Unable to acquire new authentication tokens - exiting.")
 	}
 
 	c.rcAuthToken = response.Data.AuthToken
