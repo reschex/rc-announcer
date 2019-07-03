@@ -1,3 +1,5 @@
+![](https://user-images.githubusercontent.com/14178332/60605426-68879900-9db1-11e9-9948-93dcd5d8571f.png)
+
 # rc-announcer
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/reschex/rc-announcer)](https://goreportcard.com/report/github.com/reschex/rc-announcer)
