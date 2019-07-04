@@ -1,8 +1,20 @@
 ![](https://user-images.githubusercontent.com/14178332/60605426-68879900-9db1-11e9-9948-93dcd5d8571f.png)
 
-# rc-announcer
+# RocketChat Announcer
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/reschex/rc-announcer)](https://goreportcard.com/report/github.com/reschex/rc-announcer)
+
+## Purpose
+
+If you...
+
+- want to integrate various services with [RocketChat](https://rocket.chat) but don't want to provide Credentials/API keys to every single one
+- are unable to install [RocketChat](https://github.com/RocketChat/Rocket.Chat) integration plugins and can only use webhooks or even curl commands
+
+... then the rc-announcer might be for you.
+
+It provides a handy central location to keep your credentials to simplify your API calls.
+It can also be easily extended with more handlers for specific webhooks (currently only a Grafana handler is build in)
 
 ## Dev Environment
 
